@@ -4,7 +4,6 @@
 import streamlit as st
 import time
 from langchain_ollama import ChatOllama
-from langchain_groq import ChatGroq
 from pydantic import Field, BaseModel
 from typing import Dict
 from langchain_core.prompts import PromptTemplate
@@ -12,22 +11,22 @@ from langchain_core.output_parsers import StrOutputParser
 
 # ------------------------- Initializing Chat Models ------------------------- #
 qwen = ChatOllama(model="qwen3:latest", temperature=0.6, extract_reasoning=True)
-qwq = ChatGroq(
-    model="qwen-qwq-32b",
-    temperature=0.6,
-    streaming=True,
-    api_key="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"
-)
 model = qwen
+
+
 # ----------------------- Preparing structured outputs ----------------------- #
 class questions_output(BaseModel):
     """Response to the prompt in the following format only"""
+
     thinking_content: str = Field(description="All the reasoning/thinking content here")
     response_content: list[str] = Field(
         description="Generate questions in the format of list of strings"
     )
+
+
 class quiz_output(BaseModel):
     """Response to the prompt in the following format only"""
+
     class QuestionItem(BaseModel):
         question: str = Field(description="Question to be asked")
         extra_content: str = Field(
@@ -49,6 +48,7 @@ class quiz_output(BaseModel):
 # ---------------- Modified models that give structured output --------------- #
 model_questions = model.with_structured_output(questions_output)
 model_quiz = model.with_structured_output(quiz_output)
+
 
 # ---------------------------------------------------------------------------- #
 def streamer(text: str, speed: float = 0.01):
@@ -146,6 +146,8 @@ quiz_prompt = PromptTemplate.from_template(QUIZ_PROMPT_TEMPLATE)
 
 def process(x: list) -> list:
     return list(map(dict, x))
+
+
 to_quiz_questions = lambda x: process(x.response_content)  # noqa: E731
 
 # ---------------------------------- Chains ---------------------------------- #
@@ -174,7 +176,7 @@ if st.session_state.user_input != "":
     @st.cache_data
     def cache_questions() -> list[str]:
         return questions_chain.invoke({"topics": st.session_state.user_input})
-    
+
     def generate_qna() -> None:
         questions = cache_questions()[1::]
 
@@ -189,20 +191,19 @@ if st.session_state.user_input != "":
 
                 st.divider()
 
-
     @st.cache_data
     def generate_quiz() -> None:
         st.session_state.quiz_questions = quiz_chain.invoke(
             {"topic": st.session_state.user_input}
         )
-        
-# ---------------------------------- BUTTONS --------------------------------- #
+
+    # ---------------------------------- BUTTONS --------------------------------- #
     with st.sidebar():
         if st.button("Generate QnA"):
             generate_qna()
         if st.button("Generate Quiz"):
             generate_quiz()
-        
+
 
 else:
     st.write("""Please enter some topics to get started.
