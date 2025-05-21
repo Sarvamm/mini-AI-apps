@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 import ollama 
 
 def fix_text(text):
