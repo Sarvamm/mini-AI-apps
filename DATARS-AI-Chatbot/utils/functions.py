@@ -14,6 +14,7 @@ import ast
 #                               F U N C T I O N S                              #
 # ---------------------------------------------------------------------------- #
 
+
 def is_ollama_running() -> bool:
     """_summary_
     Check if ollama is running or not
@@ -67,20 +68,18 @@ def get_ollama_stream(
         - The function uses the "qwen2.5-coder:7b" model for generating responses.
         - Responses are streamed in chunks, and each chunk's content is yielded.
     """
-    
-    
-    
-    prompt = f'''You are a data analyst assistant working on a with the following columns:
-{st.session_state['context']['columns']}
+
+    prompt = f"""You are a data analyst assistant working on a with the following columns:
+{st.session_state["context"]["columns"]}
 
 Out of which, numerical columns are:
-{st.session_state['context']['numerical_columns']}
+{st.session_state["context"]["numerical_columns"]}
 
 and Categorical columns are:
-{st.session_state['context']['categorical_columns']}
+{st.session_state["context"]["categorical_columns"]}
 
 columns data types are:
-{st.session_state['context']['dtypes']}
+{st.session_state["context"]["dtypes"]}
 
 
 The data frame is loaded in the variable df.
@@ -92,9 +91,8 @@ First decide whether the question requires a plot or not.
 Use single quotes for st.write().
 Respond only with executable Python code blocks that can run inside exec().
 Question:
-{user_prompt}'''
-    
-    
+{user_prompt}"""
+
     for chunk in ollama.chat(
         model=model, messages=[{"role": "user", "content": prompt}], stream=True
     ):
@@ -170,12 +168,12 @@ def get_questions() -> list[str]:
     prompt = f"""Based on the following info extracted from a data set, write interesting questions 
     a data analyst can plot, present your output only in the following format:
     ['Question1', 'Question2', 'Question3']
-    also do not use apostropes in the output.
+    also do not use apostrophes in the output.
     eg: ['What is the average age of customers?', 'How many unique products are sold?', 'Correlation between attendance and exam score?']
     
-    Data Name: {st.session_state['context']["file_name"]}
-    Numerical Columns: {st.session_state['context']["numerical_columns"]}
-    Categorical Columns: {st.session_state['context']["categorical_columns"]} 
+    Data Name: {st.session_state["context"]["file_name"]}
+    Numerical Columns: {st.session_state["context"]["numerical_columns"]}
+    Categorical Columns: {st.session_state["context"]["categorical_columns"]} 
     """
 
     response = callOllama(prompt, model="gemma3")
@@ -189,7 +187,9 @@ def get_questions() -> list[str]:
         except (ValueError, SyntaxError):
             return []
 
+
 # ---------------------------------------------------------------------------- #
+
 
 @st.cache_data
 def execute(response: str) -> None:
@@ -208,13 +208,14 @@ def execute(response: str) -> None:
         None: This function does not return a value.
     """
 
-    match = re.search(r'```python\s*\n(.*?)```', response, re.DOTALL)
-    
+    match = re.search(r"```python\s*\n(.*?)```", response, re.DOTALL)
+
     if match:
         code = match.group(1)
         try:
-            exec(code, {"df": st.session_state.df, 'st':st})
+            exec(code, {"df": st.session_state.df, "st": st})
         except Exception as e:
             st.error(f"An error occurred: {e}")
-            
+
+
 # ------------------------------------ End ----------------------------------- #
