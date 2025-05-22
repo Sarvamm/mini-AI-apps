@@ -156,7 +156,7 @@ def get_context() -> dict:
 
 
 @st.cache_data
-def get_questions() -> list[str]:
+def get_questions() -> list[str] | None:
     """
     Generates a list of 15+ questions that a data analyst can plot based on the provided dataset context.
 
@@ -185,7 +185,7 @@ def get_questions() -> list[str]:
             question_list = ast.literal_eval(list_str)
             return question_list
         except (ValueError, SyntaxError):
-            return []
+            return None
 
 
 # ---------------------------------------------------------------------------- #
