@@ -1,0 +1,5 @@
+streamlit
+streamlit-extras
+ollama
+pillow
+pyperclip
